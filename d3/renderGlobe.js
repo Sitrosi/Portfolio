@@ -4,7 +4,8 @@ const getGlobeData = () => {
     return {
         scale: 300,
         globeColour: "#87CEEB", // Sea blue for the globe
-        countryColour: "#228B22", // Land green for the countries
+        countryColour: "#006400", // Land green for the countries
+        countryHoverColour: "#00FF00", // Land green for the countries
         countriesBoundaryColour: "#000", // Black for country boundaries
         clipAngle: 90,
         countriesUrl: "countries-110m.json"

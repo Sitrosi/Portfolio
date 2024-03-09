@@ -95,13 +95,25 @@ class GlobeVisualization {
             return; // Exit if countriesData is not iterable
         }
 
-        // Render countries
-        this.svg.selectAll(".country")
+        // Render countries with a darker fill color by default
+        const countries = this.svg.selectAll(".country")
             .data(this.countriesData)
-            .enter().append("path")
+            .join("path")
             .attr("class", "country")
             .attr("d", this.path)
-            .attr("fill", this.config.countryColour);
+            .attr("fill", d3.rgb(this.config.countryColour)); // Darken the default color
+
+        // Add hover event listeners
+        countries.on("mouseover", (event, d) => {
+                // Lighten the hovered country
+                d3.select(event.currentTarget).attr("fill", this.config.countryHoverColour);
+                document.getElementById('countryName').textContent = d.properties.name;
+            })
+            .on("mouseout", () => {
+                // Reset the hovered country to the default darker color
+                d3.select(event.currentTarget).attr("fill", d3.rgb(this.config.countryColour));
+                document.getElementById('countryName').textContent = "";
+            });
     }
 
     renderBoundaries(world, countriesBoundaryColour) {
