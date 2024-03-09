@@ -1,0 +1,38 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    background: #0A0F25; /* Dark space-like blue */
+    overflow: hidden;
+    position: relative;
+}
+
+#container::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    pointer-events: none;
+    background-image: radial-gradient(white 0.5px, transparent 0.5px),
+                      radial-gradient(white 0.5px, transparent 0.5px);
+    background-size: 10px 10px;
+    background-position: 0 0, 5px 5px;
+    opacity: 0.3;
+}
+
+#countryName {
+    position: absolute;
+    top: 10px; /* Adjust as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    color: #FFFFFF;
+    margin: 0; /* Remove margin to avoid extra space */
+    padding: 10px; /* Optional, for better visibility */
+    background: rgba(0, 0, 0, 0.5); /* Optional, for better readability */
+    border-radius: 5px; /* Optional, for aesthetics */
+    pointer-events: none; /* Ensures mouse events pass through to elements below */
+}
