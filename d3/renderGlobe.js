@@ -18,9 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('resize', () => {
-    // Clear the existing SVG
-    d3.select("#globe").selectAll("*").remove();
-    
     // Redraw the globe
     gv.renderGlobe();
 });

@@ -8,7 +8,7 @@ class GlobeVisualization {
     }
 
     async init() {
-        const {scale, clipAngle, globeColour, countriesUrl, countriesBoundaryColour} = this.config;
+        const {scale, clipAngle, globeColour, countriesUrl} = this.config;
         this.svg = d3.select(this.selector);
         // Ensure this.svg is not null by checking if node() returns a valid element
         if (!this.svg.node()) {
@@ -33,10 +33,9 @@ class GlobeVisualization {
             .attr("fill", globeColour);
 
         try {
-            const world = await d3.json(countriesUrl);
-            this.countriesData = topojson.feature(world, world.objects.countries).features;
+            this.world = await d3.json(countriesUrl);
+            this.countriesData = topojson.feature(this.world, this.world.objects.countries).features;
             this.renderGlobe();
-            this.renderBoundaries(world, countriesBoundaryColour);
         } catch (error) {
             console.error("Error loading or processing countries data:", error);
         }
@@ -90,37 +89,56 @@ class GlobeVisualization {
     }
 
     renderGlobe() {
+        // Ensure that this.svg is cleared only of specific elements to prevent removing the background unintentionally
+        this.svg.selectAll(".country, .boundary").remove();
+
+        // Check for the existence of the sphere path, create or update it
+        const sphere = this.svg.selectAll(".sphere").data([{ type: "Sphere" }]);
+        sphere.enter()
+            .append("path")
+            .attr("class", "sphere")
+            .merge(sphere)
+            .attr("d", this.path)
+            .attr("fill", this.config.globeColour);
+
+        // Ensure country data is loaded before proceeding
         if (!Array.isArray(this.countriesData)) {
-            console.log("Waiting for country data");
-            return; // Exit if countriesData is not iterable
+            console.error("Waiting for country data");
+            return;
         }
 
-        // Render countries with a darker fill color by default
+        // Render countries
         const countries = this.svg.selectAll(".country")
             .data(this.countriesData)
-            .join("path")
+            .enter().append("path")
             .attr("class", "country")
             .attr("d", this.path)
-            .attr("fill", d3.rgb(this.config.countryColour)); // Darken the default color
+            .attr("fill", this.config.countryColour);
 
-        // Add hover event listeners
+        // Apply hover effects to countries
         countries.on("mouseover", (event, d) => {
-                // Lighten the hovered country
                 d3.select(event.currentTarget).attr("fill", this.config.countryHoverColour);
-                document.getElementById('countryName').textContent = d.properties.name;
+                document.getElementById('countryName').textContent = d.properties.name; // Assuming an element with the id 'countryName' exists
             })
-            .on("mouseout", () => {
-                // Reset the hovered country to the default darker color
-                d3.select(event.currentTarget).attr("fill", d3.rgb(this.config.countryColour));
+            .on("mouseout", (event, d) => {
+                d3.select(event.currentTarget).attr("fill", this.config.countryColour);
                 document.getElementById('countryName').textContent = "";
             });
+
+        // Re-render boundaries if needed
+        this.renderBoundaries();
     }
 
-    renderBoundaries(world, countriesBoundaryColour) {
+    renderBoundaries() {
+        // Ensure the correct reference to countriesBoundaryColour from the configuration
+        const countriesBoundaryColour = this.config.countriesBoundaryColour;
+
+        // Correctly access the TopoJSON objects for world and countries
+        const boundaries = topojson.mesh(this.world, this.world.objects.countries, (a, b) => a !== b);
+
         // Render country boundaries
-        const datum = topojson.mesh(world, world.objects.countries, (a, b) => a !== b);
         this.svg.append("path")
-            .datum(datum)
+            .datum(boundaries)
             .attr("class", "boundary")
             .attr("d", this.path)
             .attr("fill", "none")
